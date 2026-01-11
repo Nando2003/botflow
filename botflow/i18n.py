@@ -37,15 +37,21 @@ class I18n:
         catalog: dict[str, dict[str, Any]] = {}
 
         for locales_dir in locales_dirs if isinstance(locales_dirs, list) else [locales_dirs]:
-            for json_file in Path(locales_dir).glob('*.json'):
-                locale_name = json_file.stem
+            for json_file in Path(locales_dir).glob('**/*.json'):
+                locale_name = json_file.parent.name
 
                 with open(json_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
 
-                if locale_name not in catalog:
-                    catalog[locale_name] = {}
+                catalog.setdefault(locale_name, {})
 
-                catalog[locale_name].update(data)
+                if isinstance(data, dict):
+                    for v in data.values():
+                        if isinstance(v, dict):
+                            catalog[locale_name].update(v)
+
+                    for k, v in data.items():
+                        if isinstance(v, str):
+                            catalog[locale_name][k] = v
 
         return I18n(catalog, lang)

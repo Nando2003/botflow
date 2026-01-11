@@ -76,35 +76,35 @@ def test_t_uses_default_locale_when_locale_is_none():
 
 def test_from_locales_dirs_loads_single_dir_and_merges_files(monkeypatch, tmp_path: Path):
     locales_dir = tmp_path / 'locales'
-    _write_json(locales_dir / 'pt-BR.json', {'common.start': 'Iniciar'})
-    _write_json(locales_dir / 'en_US.json', {'common.start': 'Start'})
+    _write_json(locales_dir / 'pt-BR' / 'common.json', {'start': 'Iniciar'})
+    _write_json(locales_dir / 'en_US' / 'common.json', {'start': 'Start'})
 
     import botflow.i18n as i18n_mod
 
-    monkeypatch.setattr(i18n_mod, 'find_all_locales_dirs', lambda: str(locales_dir))
+    monkeypatch.setattr(i18n_mod, 'find_all_locales_dirs', lambda: [locales_dir])
 
     i18n = I18n.from_locales_dirs('pt-BR')
-    assert i18n.t('common.start') == 'Iniciar'
+    assert i18n.t('start') == 'Iniciar'
 
     i18n.set_lang('en_US')
-    assert i18n.t('common.start') == 'Start'
+    assert i18n.t('start') == 'Start'
 
 
 def test_from_locales_dirs_accepts_list_of_dirs_and_user_overrides_lib(monkeypatch, tmp_path: Path):
     lib_dir = tmp_path / 'lib_locales'
-    _write_json(lib_dir / 'pt-BR.json', {'common.start': 'Iniciar', 'common.back': 'Voltar'})
+    _write_json(lib_dir / 'pt-BR' / 'common.json', {'start': 'Iniciar', 'back': 'Voltar'})
 
     user_dir = tmp_path / 'user_locales'
-    _write_json(user_dir / 'pt-BR.json', {'common.start': 'Começar'})
-    _write_json(user_dir / 'en_US.json', {'common.start': 'Start'})
+    _write_json(user_dir / 'pt-BR' / 'common.json', {'start': 'Começar'})
+    _write_json(user_dir / 'en_US' / 'common.json', {'start': 'Start'})
 
     import botflow.i18n as i18n_mod
 
-    monkeypatch.setattr(i18n_mod, 'find_all_locales_dirs', lambda: [str(lib_dir), str(user_dir)])
+    monkeypatch.setattr(i18n_mod, 'find_all_locales_dirs', lambda: [lib_dir, user_dir])
 
     i18n = I18n.from_locales_dirs('pt-BR')
-    assert i18n.t('common.start') == 'Começar'
-    assert i18n.t('common.back') == 'Voltar'
+    assert i18n.t('start') == 'Começar'
+    assert i18n.t('back') == 'Voltar'
 
     i18n.set_lang('en_US')
-    assert i18n.t('common.start') == 'Start'
+    assert i18n.t('start') == 'Start'
