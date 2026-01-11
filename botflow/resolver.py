@@ -21,7 +21,7 @@ def find_resource_file(name: str) -> Path:
     if bundle_root:
         res_dirs = []
 
-        bundle_user_res_dir = get_user_bundle_resource_dir()
+        bundle_user_res_dir = get_user_bundle_resource_dir() or get_user_resource_dir()
         if bundle_user_res_dir:
             res_dirs.append(bundle_user_res_dir)
 
@@ -36,7 +36,7 @@ def find_resource_file(name: str) -> Path:
             if candidate.is_file():
                 return candidate
 
-        raise FileNotFoundError(f"Resource file '{name}' not found.")
+        raise FileNotFoundError(f"Resource file '{name}' not found in bundle.")
 
     app_res_dir = get_user_resource_dir()
     if app_res_dir:
@@ -57,13 +57,10 @@ def _find_bundle_locales_dirs() -> list[Path]:
     if not bundle_root:
         return bundle_locales_dirs
 
-    bundle_res_dirs = []
-
-    bundle_user_res_dir = get_user_bundle_resource_dir()
+    bundle_res_dirs = [bundle_root / LIB_BUNDLE_RESOURCES_DIR]
+    bundle_user_res_dir = get_user_bundle_resource_dir() or get_user_resource_dir()
     if bundle_user_res_dir:
         bundle_res_dirs.append(bundle_user_res_dir)
-
-    bundle_res_dirs.append(bundle_root / LIB_BUNDLE_RESOURCES_DIR)
 
     for res_dir in bundle_res_dirs:
         if not res_dir.is_dir():
