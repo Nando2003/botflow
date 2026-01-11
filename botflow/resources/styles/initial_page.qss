@@ -1,0 +1,30 @@
+InitialScreen {
+    background: #f8f9fa;
+}
+
+QLabel[role="initial_title"] {
+    font-family: "Inter", "Segoe UI", sans-serif;
+    font-weight: 600;
+    font-size: 28px;
+    color: #2d2d2d;
+}
+
+QPushButton[role="initial_button"] {
+    min-width: 160px;
+    min-height: 42px;
+    padding: 6px 200px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #2563eb;
+    border: none;
+}
+
+QPushButton[role="initial_button"]:hover {
+  background-color: #1d4ed8;
+}
+
+QPushButton[role="initial_button"]:pressed {
+  background-color: #1e40af;
+}

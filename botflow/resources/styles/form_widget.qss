@@ -1,0 +1,40 @@
+QLabel[role="step_title"] {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+QLabel[role="form_label"] {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+  padding-right: 12px;
+}
+
+QLineEdit[role="form_input"] {
+  color: #111827;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 12px;
+  min-height: 20px;
+}
+
+QLineEdit[role="form_input"]:hover {
+  border-color: #cbd5e1;
+}
+
+QLineEdit[role="form_input"]:focus {
+  border: 1px solid #2563eb;
+  outline: none;
+}
+
+QLineEdit[role="form_input"]:disabled {
+  color: #9ca3af;
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+QLineEdit[role="form_input"]::placeholder {
+  color: #9ca3af;
+}

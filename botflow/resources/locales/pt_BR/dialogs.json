@@ -1,0 +1,15 @@
+{
+  "dialogs.confirm.title": "Confirmar",
+  "dialogs.confirm.run_pipeline_text": "Tem certeza que deseja executar o pipeline?",
+  "dialogs.confirm.yes": "Sim",
+  "dialogs.confirm.no": "Não",
+
+  "dialogs.close.title": "Fechar",
+  "dialogs.close.exit_text": "Tem certeza que deseja sair?",
+  "dialogs.close.yes": "Sim",
+  "dialogs.close.no": "Não",
+
+  "dialogs.warn_title": "Aviso",
+  "dialogs.success_title": "Sucesso",
+  "dialogs.error_title": "Erro"
+}

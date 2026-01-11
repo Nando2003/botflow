@@ -1,0 +1,16 @@
+target-version = "py313"
+line-length = 100
+extend-exclude = ["**/migrations/**"]
+
+[format]
+quote-style = "preserve"
+
+[lint.flake8-quotes]
+inline-quotes = 'single'
+multiline-quotes = 'single'
+docstring-quotes = 'single'
+avoid-escape = true
+
+[lint]
+select = ["E", "F", "N", "Q"]
+extend-select = ["W", "I", "B", "C90"]

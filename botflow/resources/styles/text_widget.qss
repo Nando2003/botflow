@@ -1,0 +1,33 @@
+QLabel[role="text_title"] {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+QLineEdit[role="text_input"] {
+  color: #111827;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 12px;
+  min-height: 20px;
+}
+
+QLineEdit[role="text_input"]:hover {
+  border-color: #cbd5e1;
+}
+
+QLineEdit[role="text_input"]:focus {
+  border: 1px solid #2563eb;
+  outline: none;
+}
+
+QLineEdit[role="text_input"]:disabled {
+  color: #9ca3af;
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+QLineEdit[role="text_input"]::placeholder {
+  color: #9ca3af;
+}

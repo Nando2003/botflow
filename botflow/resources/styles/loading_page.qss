@@ -1,0 +1,37 @@
+LoadingScreen {
+  padding-top: 24px;
+}
+
+QLabel[role="loading_icon"] {
+  min-width: 64px;
+  min-height: 64px;
+}
+
+QLabel[role="loading_title"] {
+  font-size: 28px;
+  font-weight: 600;
+  color: #2d2d2d;
+}
+
+QLabel[role="loading_status"] {
+  font-size: 16px;
+  color: #555555;
+}
+
+QProgressBar[role="loading_progress"]{
+  min-height: 40px;
+  max-height: 40px;
+  min-width: 600px;
+  max-width: 600px;
+  border: none;
+  border-radius: 14px;
+  background: #e5e5e5;
+  padding: 0px;
+}
+
+QProgressBar[role="loading_progress"]::chunk{
+  background: #2563eb;
+  border-radius: 14px;
+  margin: 0px;
+}
+

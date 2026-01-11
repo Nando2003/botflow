@@ -1,0 +1,5 @@
+{
+  "messages.no_pipeline": "Nenhum pipeline para executar.",
+  "messages.flow_success": "Fluxo concluído com sucesso!",
+  "messages.flow_error_prefix": "Ocorreu um erro durante a execução do fluxo:\n\n"
+}
