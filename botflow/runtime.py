@@ -10,9 +10,23 @@ def get_user_resource_dir(default: str | Path | None = None) -> Path | None:
     if val is None:
         if default is None:
             return None
-        return Path(default).expanduser().resolve()
+        path = Path(default).expanduser().resolve()
+        return path if path.exists() else None
 
-    return Path(val).expanduser().resolve()
+    path = Path(val).expanduser().resolve()
+    return path if path.exists() else None
+
+
+def get_user_bundle_resource_dir(default: str | Path | None = None) -> Path | None:
+    val = getattr(__main__, 'BUNDLE_RESOURCES_DIR', None)
+    if val is None:
+        if default is None:
+            return None
+        path = Path(default).expanduser().resolve()
+        return path if path.exists() else None
+
+    path = Path(val).expanduser().resolve()
+    return path if path.exists() else None
 
 
 def get_lang() -> str | None:

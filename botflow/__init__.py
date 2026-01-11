@@ -29,7 +29,7 @@ from PySide6.QtWidgets import QApplication
 
 
 def get_hook_dirs():
-    return [str(Path(__file__).resolve().with_name('_pyinstaller_hooks'))]
+    return [str(Path(__file__).resolve().with_name('__pyinstaller'))]
 
 
 def run_application():

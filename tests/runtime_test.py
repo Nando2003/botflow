@@ -7,9 +7,10 @@ from botflow.runtime import get_lang, get_user_resource_dir
 class TestGetResourceDir:
     def test_returns_path_when_resources_dir_is_set(self):
         with mock.patch('__main__.RESOURCES_DIR', '/home/user/resources', create=True):
-            result = get_user_resource_dir()
-            assert isinstance(result, Path)
-            assert result == Path('/home/user/resources').resolve()
+            with mock.patch('pathlib.Path.exists', return_value=True):
+                result = get_user_resource_dir()
+                assert isinstance(result, Path)
+                assert result == Path('/home/user/resources').resolve()
 
     def test_returns_none_when_no_resources_dir_and_no_default(self):
         with mock.patch.dict('__main__.__dict__', {}, clear=False):
@@ -20,28 +21,32 @@ class TestGetResourceDir:
 
     def test_uses_default_when_resources_dir_not_set(self):
         with mock.patch('botflow.runtime.__main__', new_callable=lambda: mock.MagicMock(spec=[])):
-            result = get_user_resource_dir(default='/tmp/default')
-            assert isinstance(result, Path)
-            assert result == Path('/tmp/default').resolve()
+            with mock.patch('pathlib.Path.exists', return_value=True):
+                result = get_user_resource_dir(default='/tmp/default')
+                assert isinstance(result, Path)
+                assert result == Path('/tmp/default').resolve()
 
     def test_expands_and_resolves_tilde_in_path(self):
         with mock.patch('__main__.RESOURCES_DIR', '~/resources', create=True):
-            result = get_user_resource_dir()
-            assert isinstance(result, Path)
-            assert '~' not in str(result)
-            assert result.is_absolute()
+            with mock.patch('pathlib.Path.exists', return_value=True):
+                result = get_user_resource_dir()
+                assert isinstance(result, Path)
+                assert '~' not in str(result)
+                assert result.is_absolute()
 
     def test_accepts_path_object_as_default(self):
         path_obj = Path('/tmp/resources')
         with mock.patch('botflow.runtime.__main__', new_callable=lambda: mock.MagicMock(spec=[])):
-            result = get_user_resource_dir(default=path_obj)
-            assert isinstance(result, Path)
-            assert result == path_obj.resolve()
+            with mock.patch('pathlib.Path.exists', return_value=True):
+                result = get_user_resource_dir(default=path_obj)
+                assert isinstance(result, Path)
+                assert result == path_obj.resolve()
 
     def test_resources_dir_takes_precedence_over_default(self):
         with mock.patch('__main__.RESOURCES_DIR', '/path/from/main', create=True):
-            result = get_user_resource_dir(default='/path/from/default')
-            assert result == Path('/path/from/main').resolve()
+            with mock.patch('pathlib.Path.exists', return_value=True):
+                result = get_user_resource_dir(default='/path/from/default')
+                assert result == Path('/path/from/main').resolve()
 
 
 class TestGetLang:

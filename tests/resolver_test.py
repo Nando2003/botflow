@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from botflow.resolver import LIB_RESOURCES_DIR, USER_RESOUCES_DIR, _bundle_root, find_resource_file
+from botflow.resolver import LIB_BUNDLE_RESOURCES_DIR, _bundle_root, find_resource_file
 
 
 class TestBundleRoot:
@@ -26,27 +26,29 @@ class TestBundleRoot:
 class TestFindResourceFile:
     def test_finds_file_in_app_resources_when_bundled(self, tmp_path):
         bundle_root = tmp_path / 'bundle'
-        app_resources = bundle_root / USER_RESOUCES_DIR
+        app_resources = tmp_path / 'user_bundle'
         app_resources.mkdir(parents=True)
         resource_file = app_resources / 'config.json'
         resource_file.write_text('{}')
 
         with mock.patch('botflow.resolver._bundle_root', return_value=bundle_root):
-            result = find_resource_file('config.json')
-            assert result == resource_file
+            with mock.patch(
+                'botflow.resolver.get_user_bundle_resource_dir', return_value=app_resources
+            ):
+                result = find_resource_file('config.json')
+                assert result == resource_file
 
     def test_finds_file_in_lib_resources_when_bundled(self, tmp_path):
         bundle_root = tmp_path / 'bundle'
-        app_resources = bundle_root / USER_RESOUCES_DIR
-        app_resources.mkdir(parents=True)
-        lib_resources = bundle_root / LIB_RESOURCES_DIR
+        lib_resources = bundle_root / LIB_BUNDLE_RESOURCES_DIR
         lib_resources.mkdir(parents=True)
         resource_file = lib_resources / 'theme.qss'
         resource_file.write_text('')
 
         with mock.patch('botflow.resolver._bundle_root', return_value=bundle_root):
-            result = find_resource_file('theme.qss')
-            assert result == resource_file
+            with mock.patch('botflow.resolver.get_user_bundle_resource_dir', return_value=None):
+                result = find_resource_file('theme.qss')
+                assert result == resource_file
 
     def test_raises_when_not_bundled(self):
         with mock.patch('botflow.resolver._bundle_root', return_value=None):
@@ -65,9 +67,9 @@ class TestFindResourceFile:
 
     def test_prefers_user_resources_over_lib_resources(self, tmp_path):
         bundle_root = tmp_path / 'bundle'
-        app_resources = bundle_root / USER_RESOUCES_DIR
+        app_resources = tmp_path / 'user_bundle'
         app_resources.mkdir(parents=True)
-        lib_resources = bundle_root / LIB_RESOURCES_DIR
+        lib_resources = bundle_root / LIB_BUNDLE_RESOURCES_DIR
         lib_resources.mkdir(parents=True)
 
         app_file = app_resources / 'config.json'
@@ -76,12 +78,15 @@ class TestFindResourceFile:
         lib_file.write_text('lib')
 
         with mock.patch('botflow.resolver._bundle_root', return_value=bundle_root):
-            result = find_resource_file('config.json')
-            assert result == app_file
+            with mock.patch(
+                'botflow.resolver.get_user_bundle_resource_dir', return_value=app_resources
+            ):
+                result = find_resource_file('config.json')
+                assert result == app_file
 
     def test_prefers_bundled_over_user_defined_dir(self, tmp_path):
         bundle_root = tmp_path / 'bundle'
-        app_resources = bundle_root / USER_RESOUCES_DIR
+        app_resources = tmp_path / 'user_bundle'
         app_resources.mkdir(parents=True)
         bundled_file = app_resources / 'resource.txt'
         bundled_file.write_text('bundled')
@@ -92,28 +97,36 @@ class TestFindResourceFile:
         user_file.write_text('user')
 
         with mock.patch('botflow.resolver._bundle_root', return_value=bundle_root):
-            with mock.patch('botflow.resolver.get_user_resource_dir', return_value=user_dir):
+            with mock.patch(
+                'botflow.resolver.get_user_bundle_resource_dir', return_value=app_resources
+            ):
                 result = find_resource_file('resource.txt')
                 assert result == bundled_file
 
     def test_returns_path_object(self, tmp_path):
-        app_resources = tmp_path / USER_RESOUCES_DIR
+        app_resources = tmp_path / 'user_bundle'
         app_resources.mkdir(parents=True)
         resource_file = app_resources / 'test.txt'
         resource_file.write_text('test')
 
         with mock.patch('botflow.resolver._bundle_root', return_value=tmp_path):
-            result = find_resource_file('test.txt')
-            assert isinstance(result, Path)
-            assert result.is_file()
+            with mock.patch(
+                'botflow.resolver.get_user_bundle_resource_dir', return_value=app_resources
+            ):
+                result = find_resource_file('test.txt')
+                assert isinstance(result, Path)
+                assert result.is_file()
 
     def test_handles_nested_file_paths(self, tmp_path):
-        app_resources = tmp_path / USER_RESOUCES_DIR
+        app_resources = tmp_path / 'user_bundle'
         nested_dir = app_resources / 'subdir'
         nested_dir.mkdir(parents=True)
         resource_file = nested_dir / 'nested.json'
         resource_file.write_text('{}')
 
         with mock.patch('botflow.resolver._bundle_root', return_value=tmp_path):
-            result = find_resource_file('subdir/nested.json')
-            assert result == resource_file
+            with mock.patch(
+                'botflow.resolver.get_user_bundle_resource_dir', return_value=app_resources
+            ):
+                result = find_resource_file('subdir/nested.json')
+                assert result == resource_file
