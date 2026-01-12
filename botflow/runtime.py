@@ -1,40 +1,35 @@
 import importlib.resources as ir
+import os
 from locale import getdefaultlocale
 from pathlib import Path
 
-import __main__
-
 
 def get_user_resource_dir(default: str | Path | None = None) -> Path | None:
-    val = getattr(__main__, 'RESOURCES_DIR', None)
+    val = os.getenv('BOTFLOW_RESOURCES_DIR')
+    if not val:
+        val = default
     if val is None:
-        if default is None:
-            return None
-        path = Path(default).expanduser().resolve()
-        return path if path.exists() else None
+        return None
 
-    path = Path(val).expanduser().resolve()
-    return path if path.exists() else None
-
+    p = Path(val).expanduser()
+    return p.resolve() if p.exists() else None
 
 def get_user_bundle_resource_dir(default: str | Path | None = None) -> Path | None:
-    val = getattr(__main__, 'BUNDLE_RESOURCES_DIR', None)
+    val = os.getenv('BOTFLOW_BUNDLE_RESOURCES_DIR')
+    if not val:
+        val = default
     if val is None:
-        if default is None:
-            return None
-        path = Path(default).expanduser().resolve()
-        return path if path.exists() else None
+        return None
 
-    path = Path(val).expanduser().resolve()
-    return path if path.exists() else None
-
+    p = Path(val).expanduser()
+    return p.resolve() if p.exists() else None
 
 def get_lang() -> str | None:
-    val = getattr(__main__, 'LANG', None)
-    if val is None:
-        locale, _ = getdefaultlocale()
-        return locale
-    return val
+    val = os.getenv('BOTFLOW_LANG')
+    if val:
+        return val
+    locale, _ = getdefaultlocale()
+    return locale
 
 
 def get_lib_resource_dir() -> Path:
