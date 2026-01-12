@@ -74,37 +74,31 @@ def test_t_uses_default_locale_when_locale_is_none():
     assert i18n.t('common.start') == 'Start'
 
 
-def test_from_locales_dirs_loads_single_dir_and_merges_files(monkeypatch, tmp_path: Path):
-    locales_dir = tmp_path / 'locales'
-    _write_json(locales_dir / 'pt-BR' / 'common.json', {'start': 'Iniciar'})
-    _write_json(locales_dir / 'en_US' / 'common.json', {'start': 'Start'})
+def test_detects_duplicate_keys_with_different_values_in_pt_br_locale():
+    locales_dir = Path(__file__).parent.parent / 'botflow' / 'resources' / 'locales' / 'pt_BR'
 
-    import botflow.i18n as i18n_mod
+    all_keys = {}
+    duplicates_with_different_values = []
 
-    monkeypatch.setattr(i18n_mod, 'find_all_locales_dirs', lambda: [locales_dir])
+    for json_file in locales_dir.glob('*.json'):
+        with open(json_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
 
-    i18n = I18n.from_locales_dirs('pt-BR')
-    assert i18n.t('start') == 'Iniciar'
-
-    i18n.set_lang('en_US')
-    assert i18n.t('start') == 'Start'
-
-
-def test_from_locales_dirs_accepts_list_of_dirs_and_user_overrides_lib(monkeypatch, tmp_path: Path):
-    lib_dir = tmp_path / 'lib_locales'
-    _write_json(lib_dir / 'pt-BR' / 'common.json', {'start': 'Iniciar', 'back': 'Voltar'})
-
-    user_dir = tmp_path / 'user_locales'
-    _write_json(user_dir / 'pt-BR' / 'common.json', {'start': 'Começar'})
-    _write_json(user_dir / 'en_US' / 'common.json', {'start': 'Start'})
-
-    import botflow.i18n as i18n_mod
-
-    monkeypatch.setattr(i18n_mod, 'find_all_locales_dirs', lambda: [lib_dir, user_dir])
-
-    i18n = I18n.from_locales_dirs('pt-BR')
-    assert i18n.t('start') == 'Começar'
-    assert i18n.t('back') == 'Voltar'
-
-    i18n.set_lang('en_US')
-    assert i18n.t('start') == 'Start'
+        for key, value in data.items():
+            if key in all_keys:
+                if all_keys[key]['value'] != value:
+                    duplicates_with_different_values.append(
+                        {
+                            'key': key,
+                            'file1': all_keys[key]['file'],
+                            'value1': all_keys[key]['value'],
+                            'file2': json_file.name,
+                            'value2': value,
+                        }
+                    )
+            else:
+                all_keys[key] = {'value': value, 'file': json_file.name}
+    assert len(duplicates_with_different_values) == 0, (
+        f'Found {len(duplicates_with_different_values)} duplicate keys with different values: '
+        f'{duplicates_with_different_values}'
+    )

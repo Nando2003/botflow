@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from botflow.resolver import find_all_locales_dirs
+from botflow.resolver import find_all_subfolder_by_name
 
 
 class I18n:
@@ -33,7 +33,7 @@ class I18n:
 
     @staticmethod
     def from_locales_dirs(lang: str):
-        locales_dirs = find_all_locales_dirs()
+        locales_dirs = find_all_subfolder_by_name('locales')
         catalog: dict[str, dict[str, Any]] = {}
 
         for locales_dir in locales_dirs if isinstance(locales_dirs, list) else [locales_dirs]:
@@ -54,4 +54,5 @@ class I18n:
                         if isinstance(v, str):
                             catalog[locale_name][k] = v
 
-        return I18n(catalog, lang)
+        i18n = I18n(catalog, lang)
+        return i18n

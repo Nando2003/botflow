@@ -20,7 +20,7 @@ flow = FlowSpec(
             placeholder='Enter your name',
         ),
     ],
-    on_finish=[greet_user]
+    on_finish=[greet_user],
 )
 
 

@@ -14,6 +14,7 @@ def get_user_resource_dir(default: str | Path | None = None) -> Path | None:
     p = Path(val).expanduser()
     return p.resolve() if p.exists() else None
 
+
 def get_user_bundle_resource_dir(default: str | Path | None = None) -> Path | None:
     val = os.getenv('BOTFLOW_BUNDLE_RESOURCES_DIR')
     if not val:
@@ -23,6 +24,7 @@ def get_user_bundle_resource_dir(default: str | Path | None = None) -> Path | No
 
     p = Path(val).expanduser()
     return p.resolve() if p.exists() else None
+
 
 def get_lang() -> str | None:
     val = os.getenv('BOTFLOW_LANG')

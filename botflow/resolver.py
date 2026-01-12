@@ -16,79 +16,82 @@ def _bundle_root() -> Optional[Path]:
     return Path(meipass) if meipass else None
 
 
-def find_resource_file(name: str) -> Path:
+def _search_for_file_in_bundle(filepath: str) -> Optional[Path]:
     bundle_root = _bundle_root()
-    if bundle_root:
-        res_dirs = []
+    if not bundle_root:
+        return None
 
-        bundle_user_res_dir = get_user_bundle_resource_dir() or get_user_resource_dir()
-        if bundle_user_res_dir:
-            res_dirs.append(bundle_user_res_dir)
+    bundle_usr_resource_dir = get_user_bundle_resource_dir() or get_user_resource_dir()
+    bundle_usr_resource_dir = (
+        bundle_root / bundle_usr_resource_dir if bundle_usr_resource_dir else None
+    )
 
-        res_dirs.append(bundle_root / LIB_BUNDLE_RESOURCES_DIR)
+    bundle_lib_resource_dir = bundle_root / LIB_BUNDLE_RESOURCES_DIR
+    all_bundle_resource_dirs = [d for d in (bundle_usr_resource_dir, bundle_lib_resource_dir) if d]
 
-        for res_dir in res_dirs:
-            if not res_dir.is_dir():
-                continue
-
-            candidate = res_dir / name
+    for res_dir in all_bundle_resource_dirs:
+        if res_dir.is_dir():
+            candidate = res_dir / filepath
 
             if candidate.is_file():
                 return candidate
 
-        raise FileNotFoundError(f"Resource file '{name}' not found in bundle.")
+    return None
 
+
+def _search_for_file_in_app(filepath: str) -> Optional[Path]:
     app_res_dir = get_user_resource_dir()
-    if app_res_dir:
-        candidate = app_res_dir / name
+    lib_res_dir = get_lib_resource_dir()
+    all_app_resource_dirs = [d for d in (app_res_dir, lib_res_dir) if d]
+
+    for res_dir in all_app_resource_dirs:
+        candidate = res_dir / filepath
         if candidate.is_file():
             return candidate
 
-    lib_res_dir = get_lib_resource_dir() / name
-    if lib_res_dir.is_file():
-        return lib_res_dir
-
-    raise FileNotFoundError(f"Resource file '{name}' not found.")
+    return None
 
 
-def _find_bundle_locales_dirs() -> list[Path]:
-    bundle_locales_dirs = []
+def find_resource_file(filepath: str) -> Path:
+    bundle_file = _search_for_file_in_bundle(filepath)
+
+    if bundle_file:
+        return bundle_file
+
+    app_file = _search_for_file_in_app(filepath)
+    if app_file:
+        return app_file
+
+    raise FileNotFoundError(f"Resource file '{filepath}' not found.")
+
+
+def _find_first_subfolder(subfolder: str, *directory: Path) -> list[Path]:
+    result = []
+    for res_dir in directory:
+        if res_dir.is_dir():
+            for item in res_dir.rglob(subfolder):
+                if item.is_dir():
+                    result.append(item)
+                    break
+    return result
+
+
+def find_all_subfolder_by_name(subfolder: str) -> list[Path]:
     bundle_root = _bundle_root()
-    if not bundle_root:
-        return bundle_locales_dirs
 
-    bundle_res_dirs = [bundle_root / LIB_BUNDLE_RESOURCES_DIR]
-    bundle_user_res_dir = get_user_bundle_resource_dir() or get_user_resource_dir()
-    if bundle_user_res_dir:
-        bundle_res_dirs.append(bundle_user_res_dir)
+    if bundle_root:
+        bundle_usr_resource_dir = get_user_bundle_resource_dir() or get_user_resource_dir()
+        bundle_usr_resource_dir = (
+            bundle_root / bundle_usr_resource_dir if bundle_usr_resource_dir else None
+        )
 
-    for res_dir in bundle_res_dirs:
-        if not res_dir.is_dir():
-            continue
-
-        candidate = res_dir / 'locales'
-        if candidate.is_dir():
-            bundle_locales_dirs.append(candidate)
-
-    return bundle_locales_dirs
-
-
-def find_all_locales_dirs() -> list[Path]:
-    locales_dirs = _find_bundle_locales_dirs()
-    if locales_dirs:
-        return locales_dirs
-
-    lib_locales_dir = get_lib_resource_dir() / 'locales'
-    if lib_locales_dir.is_dir():
-        locales_dirs.append(lib_locales_dir)
+        bundle_lib_resource_dir = bundle_root / LIB_BUNDLE_RESOURCES_DIR
+        all_bundle_resource_dirs = [
+            d for d in (bundle_lib_resource_dir, bundle_usr_resource_dir) if d
+        ]
+        return _find_first_subfolder(subfolder, *all_bundle_resource_dirs)
 
     app_res_dir = get_user_resource_dir()
-    if app_res_dir:
-        candidate = app_res_dir / 'locales'
-        if candidate.is_dir():
-            locales_dirs.append(candidate)
-
-    if not locales_dirs:
-        raise FileNotFoundError('Locales directory not found.')
-
-    return locales_dirs
+    lib_res_dir = get_lib_resource_dir()
+    all_app_resource_dirs = [d for d in (lib_res_dir, app_res_dir) if d]
+    return _find_first_subfolder(subfolder, *all_app_resource_dirs)

@@ -3,7 +3,12 @@ from unittest import mock
 
 import pytest
 
-from botflow.resolver import LIB_BUNDLE_RESOURCES_DIR, _bundle_root, find_resource_file
+from botflow.resolver import (
+    LIB_BUNDLE_RESOURCES_DIR,
+    _bundle_root,
+    find_all_subfolder_by_name,
+    find_resource_file,
+)
 
 
 class TestBundleRoot:
@@ -130,3 +135,93 @@ class TestFindResourceFile:
             ):
                 result = find_resource_file('subdir/nested.json')
                 assert result == resource_file
+
+    def test_user_resource_takes_precedence_over_lib_when_not_bundled(self, tmp_path):
+        user_dir = tmp_path / 'user'
+        user_dir.mkdir(parents=True)
+        lib_dir = tmp_path / 'lib'
+        lib_dir.mkdir(parents=True)
+
+        user_file = user_dir / 'config.json'
+        lib_file = lib_dir / 'config.json'
+        user_file.write_text('user')
+        lib_file.write_text('lib')
+
+        with mock.patch('botflow.resolver._bundle_root', return_value=None):
+            with mock.patch('botflow.resolver.get_user_resource_dir', return_value=user_dir):
+                with mock.patch('botflow.resolver.get_lib_resource_dir', return_value=lib_dir):
+                    result = find_resource_file('config.json')
+                    assert result == user_file
+                    assert result.read_text() == 'user'
+
+
+class TestFindAllSubfolderByName:
+    def test_finds_subfolder_in_user_and_lib_when_bundled(self, tmp_path):
+        bundle_root = tmp_path / 'bundle'
+        user_bundle = tmp_path / 'user_bundle'
+        locales_user = user_bundle / 'locales'
+        locales_user.mkdir(parents=True)
+
+        lib_bundle = bundle_root / LIB_BUNDLE_RESOURCES_DIR
+        locales_lib = lib_bundle / 'locales'
+        locales_lib.mkdir(parents=True)
+
+        with mock.patch('botflow.resolver._bundle_root', return_value=bundle_root):
+            with mock.patch(
+                'botflow.resolver.get_user_bundle_resource_dir', return_value=user_bundle
+            ):
+                result = find_all_subfolder_by_name('locales')
+                assert len(result) == 2
+                assert locales_user in result
+                assert locales_lib in result
+
+    def test_finds_nested_subfolder_recursively(self, tmp_path):
+        bundle_root = tmp_path / 'bundle'
+        lib_bundle = bundle_root / LIB_BUNDLE_RESOURCES_DIR
+        nested_locales = lib_bundle / 'subdir' / 'locales'
+        nested_locales.mkdir(parents=True)
+
+        with mock.patch('botflow.resolver._bundle_root', return_value=bundle_root):
+            with mock.patch('botflow.resolver.get_user_bundle_resource_dir', return_value=None):
+                result = find_all_subfolder_by_name('locales')
+                assert len(result) == 1
+                assert nested_locales in result
+
+    def test_lib_subfolder_appears_before_user_when_not_bundled(self, tmp_path):
+        user_dir = tmp_path / 'user'
+        user_locales = user_dir / 'locales'
+        user_locales.mkdir(parents=True)
+
+        lib_dir = tmp_path / 'lib'
+        lib_locales = lib_dir / 'locales'
+        lib_locales.mkdir(parents=True)
+
+        with mock.patch('botflow.resolver._bundle_root', return_value=None):
+            with mock.patch('botflow.resolver.get_user_resource_dir', return_value=user_dir):
+                with mock.patch('botflow.resolver.get_lib_resource_dir', return_value=lib_dir):
+                    result = find_all_subfolder_by_name('locales')
+                    assert len(result) == 2
+                    # Lib subfolder should come first
+                    assert result[0] == lib_locales
+                    assert result[1] == user_locales
+
+    def test_returns_empty_list_when_subfolder_not_found(self, tmp_path):
+        with mock.patch('botflow.resolver._bundle_root', return_value=None):
+            with mock.patch('botflow.resolver.get_user_resource_dir', return_value=None):
+                with mock.patch('botflow.resolver.get_lib_resource_dir', return_value=tmp_path):
+                    result = find_all_subfolder_by_name('nonexistent')
+                    assert result == []
+
+    def test_stops_at_first_subfolder_found_in_each_directory(self, tmp_path):
+        user_dir = tmp_path / 'user'
+        locales1 = user_dir / 'locales'
+        locales2 = user_dir / 'subdir' / 'locales'
+        locales1.mkdir(parents=True)
+        locales2.mkdir(parents=True)
+
+        with mock.patch('botflow.resolver._bundle_root', return_value=None):
+            with mock.patch('botflow.resolver.get_user_resource_dir', return_value=user_dir):
+                with mock.patch('botflow.resolver.get_lib_resource_dir', return_value=None):
+                    result = find_all_subfolder_by_name('locales')
+                    assert len(result) == 1
+                    assert result[0] in [locales2, locales1]
