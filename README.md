@@ -16,7 +16,7 @@ Botflow is a lightweight Python framework for building automation workflows and 
 1. Install Botflow via pip:
 
    ```bash
-   pip install botflow
+   pip install botflow-gui
    ```
 
 2. Create a simple bot workflow:
