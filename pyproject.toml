@@ -7,6 +7,9 @@ name = "botflow-gui"
 version = "0.0.3"
 readme = "README.md"
 requires-python = ">=3.12"
+authors = [
+    {name = "Fernando Fontes", email ="contactme.nando@gmail.com"},
+] 
 dependencies = [
     "pyside6>=6.9.1",
 ]
